@@ -13,7 +13,6 @@ function cplexSolve()
     # Create the model
     m = Model(with_optimizer(CPLEX.Optimizer))
 
-    # TODO
     # Variables: x[i, j] = 1 if the light at (i, j) is flipped
     @variable(model, x[1:m, 1:n], Bin)
 

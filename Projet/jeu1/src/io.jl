@@ -9,6 +9,19 @@ Read an instance from an input file
 
 - Argument:
 inputFile: path of the input file
+
+- Example of input file for a 5x5 grid
+1, , , ,1
+ , , , , ,
+1,1, ,1, ,
+1, , , , ,
+ ,1,1, , ,
+
+ - Prerequisites
+ Let n be the grid size.
+ Each line of the input file must contain n values separated by commas.
+ A value can be an integer or a white space
+
 """
 function readInputFile(inputFile::String)
 
@@ -17,16 +30,101 @@ function readInputFile(inputFile::String)
 
     data = readlines(datafile)
     close(datafile)
+     
+    n = length(split(data[1], ","))
+    t = Matrix{Int64}(undef, n, n)
+
+    lineNb = 1
 
     # For each line of the input file
     for line in data
 
-        # TODO
-        println("In file io.jl, in method readInputFile(), TODO: read a line of the input file")
+        lineSplit = split(line, ",")
 
+        if size(lineSplit, 1) == n
+            for colNb in 1:n
+
+                if lineSplit[colNb] != " "
+                    t[lineNb, colNb] = parse(Int64, lineSplit[colNb])
+                else
+                    t[lineNb, colNb] = 0
+                end
+            end
+        end 
+        
+        lineNb += 1
     end
 
+    return t
+
 end
+
+"""
+Display a grid represented by a 2-dimensional array
+
+Argument:
+- t: array of size n*n with values in [0, n] (0 if the cell is empty)
+"""
+function displayGrid(t::Matrix{Int64})
+    n = size(t, 1)
+    
+    # Display the upper border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+    
+    # For each cell (l, c)
+    for l in 1:n
+        print("|")  # Start border of each row
+        for c in 1:n
+            if t[l, c] == 0
+                print(" - ")  # Print dash for zero values with spacing for alignment
+            else
+                print(" ", t[l, c], " ")  # Print the number with surrounding spaces
+            end
+        end
+        println("|")  # End border of each row
+    end
+
+    # Display the lower border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+end
+
+
+"""
+Save a grid in a text file
+
+Argument
+- t: 2-dimensional array of size n*n
+- outputFile: path of the output file
+"""
+function saveInstance(t::Matrix{Int64}, outputFile::String)
+
+    n = size(t, 1)
+
+    # Open the output file
+    writer = open(outputFile, "w")
+
+    # For each cell (l, c) of the grid
+    for l in 1:n
+        for c in 1:n
+
+            # Write its value
+            if t[l, c] == 0
+                print(writer, " ")
+            else
+                print(writer, t[l, c])
+            end
+
+            if c != n
+                print(writer, ",")
+            else
+                println(writer, "")
+            end
+        end
+    end
+
+    close(writer)
+    
+end 
 
 
 """
