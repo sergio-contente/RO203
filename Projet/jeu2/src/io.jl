@@ -7,9 +7,22 @@ import GR
 """
 Read an instance from an input file
 
+- Example of input file for a 5x5 grid
+3,4,5,1,5
+5,2,1,1,5
+2,3,1,5,1
+1,1,2,4,3
+5,1,3,1,4
+
 - Argument:
 inputFile: path of the input file
+
+- Prerequisites
+Let n be the grid size.
+Each line of the input file must contain n values separated by commas.
+A value can be an integer from 1 to 5
 """
+
 function readInputFile(inputFile::String)
 
     # Open the input file
@@ -18,8 +31,21 @@ function readInputFile(inputFile::String)
     data = readlines(datafile)
     close(datafile)
 
+    # first line of the input file defines the size of the grid
+    n = length(split(data[1], ","))
+
+    # initialize the grid with undefined values
+    t = Matrix{Int64}(undef, n, n)
+
+    lineNb = 1
+
     # For each line of the input file
     for line in data
+        # remove spaces and split by commas
+        lineSplit = split(strip(line), ",")
+
+        
+
 
         # TODO
         println("In file io.jl, in method readInputFile(), TODO: read a line of the input file")

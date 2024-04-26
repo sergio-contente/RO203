@@ -26,6 +26,3 @@ function generateDataSet()
     println("In file generation.jl, in method generateDataSet(), TODO: generate an instance")
     
 end
-
-
-
