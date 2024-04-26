@@ -7,42 +7,59 @@ TOL = 0.00001
 """
 Solve an instance with CPLEX
 """
+
+
 function cplexSolve(t::Matrix{Int64})
     n = size(t, 1)
-
-    # Initialize the model
     m = Model(CPLEX.Optimizer)
-    
-    @variable(m, x[1:n, 1:n], Bin)
-    @variable(m, y[1:n, 1:n], Bin)
-    @variable(m, z[1:n, 1:n], Bin)
 
-    @objective(m, Min, sum(x[i, j] for i in 1:n, j in 1:n))
+    @variable(m, flips[1:n, 1:n], Bin)
+    @variable(m, choice[i=1:n, j=1:n, k=1:3], Bin)  # Binary variables for choosing flips
 
     for i in 1:n
         for j in 1:n
-            flips = x[i, j] +
-                    (i > 1 ? x[i-1, j] : 0) +
-                    (i < n ? x[i+1, j] : 0) +
-                    (j > 1 ? x[i, j-1] : 0) +
-                    (j < n ? x[i, j+1] : 0)
+            local_flips = flips[i, j]
+            if i > 1
+                local_flips += flips[i-1, j]
+            end
+            if i < n
+                local_flips += flips[i+1, j]
+            end
+            if j > 1
+                local_flips += flips[i, j-1]
+            end
+            if j < n
+                local_flips += flips[i, j+1]
+            end
 
-            if t[i, j] == 1
-                @constraint(m, flips == 1 + 2 * y[i, j])
+            if t[i, j] == 0
+                # Choices for odd numbers of flips: 1, 3, 5
+                @constraint(m, local_flips == 1*choice[i,j,1] + 3*choice[i,j,2] + 5*choice[i,j,3])
+                @constraint(m, sum(choice[i,j,:]) == 1)  # Ensure exactly one choice is made
             else
-                @constraint(m, flips == 2 * z[i, j])
+                # Choices for even numbers of flips: 0, 2, 4
+                @constraint(m, local_flips == 0*choice[i,j,1] + 2*choice[i,j,2] + 4*choice[i,j,3])
+                @constraint(m, sum(choice[i,j,:]) == 1)  # Ensure exactly one choice is made
             end
         end
     end
 
-    # Start the timer
-    start = time()
-
-    # Solve the model
+    @objective(m, Min, sum(flips))
     optimize!(m)
 
-    return JuMP.primal_status(m) == MOI.FEASIBLE_POINT, time() - start
+    if termination_status(m) == MOI.OPTIMAL
+        solution_flips = JuMP.value.(flips)
+        println("Optimal solution found. Flips needed:")
+        println(solution_flips)
+    else
+        println("No optimal solution found.")
+    end
+
+    return solution_flips
 end
+
+
+
 
 """
 Heuristically solve an instance

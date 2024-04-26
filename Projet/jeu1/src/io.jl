@@ -23,41 +23,38 @@ inputFile: path of the input file
  A value can be an integer or a white space
 
 """
-function readInputFile(inputFile::String)
-
+function readMatrixFromFile(inputFile::String) :: Matrix{Int64}
     # Open the input file
     datafile = open(inputFile)
-
     data = readlines(datafile)
     close(datafile)
-     
-    n = length(split(data[1], ","))
+
+    # Assume the first non-empty line defines the number of columns
+    n = length(split(strip(data[1]), ","))
+
+    # Initialize the matrix with undefined integers
     t = Matrix{Int64}(undef, n, n)
 
     lineNb = 1
 
-    # For each line of the input file
+    # Process each line in the data array
     for line in data
+        # Remove leading and trailing white space and split by comma
+        lineSplit = split(strip(line), ",")
 
-        lineSplit = split(line, ",")
-
-        if size(lineSplit, 1) == n
+        # Only process lines with correct number of columns
+        if length(lineSplit) == n
             for colNb in 1:n
-
-                if lineSplit[colNb] != " "
-                    t[lineNb, colNb] = parse(Int64, lineSplit[colNb])
-                else
-                    t[lineNb, colNb] = 0
-                end
+                # Replace empty entries with 0, otherwise convert to integer
+                t[lineNb, colNb] = lineSplit[colNb] != "" ? parse(Int64, lineSplit[colNb]) : 0
             end
-        end 
-        
-        lineNb += 1
+            lineNb += 1
+        end
     end
 
     return t
-
 end
+
 
 """
 Display a grid represented by a 2-dimensional array
