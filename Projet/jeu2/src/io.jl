@@ -7,6 +7,13 @@ import GR
 """
 Read an instance from an input file
 
+- Example of input file for a 5x5 grid
+3,4,5,1,5
+5,2,1,1,5
+2,3,1,5,1
+1,1,2,4,3
+5,1,3,1,4
+
 - Argument:
 inputFile: path of the input file
 
@@ -22,12 +29,15 @@ inputFile: path of the input file
  Each line of the input file must contain n values separated by commas.
  A value can be an integer or a white space
 
+
 """
+
 function readInputFile(inputFile::String)
     # Open the input file
     datafile = open(inputFile)
     data = readlines(datafile)
     close(datafile)
+
 
     # Assume the first non-empty line defines the number of columns
     n = length(split(strip(data[1]), ","))
@@ -54,6 +64,7 @@ function readInputFile(inputFile::String)
 
     return t
 end
+
 
 
 """
