@@ -180,4 +180,4 @@ function solveDataSet()
             println(resolutionMethod[methodId], " time: " * string(round(solveTime, sigdigits=2)) * "s\n")
         end         
     end 
-end
+end 

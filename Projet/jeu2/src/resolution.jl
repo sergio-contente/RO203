@@ -8,35 +8,140 @@ TOL = 0.00001
 """
 Solve an instance with CPLEX
 """
-function cplexSolve()
-
-    # Create the model
-    m = Model(with_optimizer(CPLEX.Optimizer))
-
-    # TODO
-    println("In file resolution.jl, in method cplexSolve(), TODO: fix input and output, define the model")
-
-    # Start a chronometer
-    start = time()
-
-    # Solve the model
-    optimize!(m)
-
-    # Return:
-    # 1 - true if an optimum is found
-    # 2 - the resolution time
-    return JuMP.primal_status(m) == JuMP.MathOptInterface.FEASIBLE_POINT, time() - start
-    
+function dfs(graph, start, visited)
+    stack = [start]
+    while !isempty(stack)
+        vertex = pop!(stack)
+        if vertex ∉ visited
+            push!(visited, vertex)
+            for neighbor in setdiff(graph[vertex], visited)
+                push!(stack, neighbor)
+            end
+        end
+    end
 end
+
+function check_connectivity(solution, n)
+    graph = Dict()
+    for i in 1:n
+        for j in 1:n
+            if solution[i, j] == 0
+                neighbors = Set()
+                if i > 1 && solution[i-1, j] == 0
+                    push!(neighbors, (i-1, j))
+                end
+                if i < n && solution[i+1, j] == 0
+                    push!(neighbors, (i+1, j))
+                end
+                if j > 1 && solution[i, j-1] == 0
+                    push!(neighbors, (i, j-1))
+                end
+                if j < n && solution[i, j+1] == 0
+                    push!(neighbors, (i, j+1))
+                end
+                graph[(i, j)] = neighbors
+            end
+        end
+    end
+    # Perform DFS to check connectivity
+    visited = Set()
+    start_node = first(keys(graph))
+    dfs(graph, start_node, visited)
+    return length(visited) == length(keys(graph))
+end
+
+function cplexSolve(t::Matrix{Int64})
+    n = size(t, 1)
+    m = Model(CPLEX.Optimizer)
+
+    @variable(m, x[1:n, 1:n], Bin)
+    for i in 1:n
+        for j in 1:n
+            for k in 1:n
+                if t[i, j] == t[i, k] && j != k
+                    @constraint(m, x[i, j] + x[i, k] >= 1)
+                end
+                if t[i, j] == t[k, j] && i != k
+                    @constraint(m, x[i, j] + x[k, j] >= 1)
+                end
+            end
+        end
+    end
+
+    for i in 1:n
+        for j in 1:n
+            if i > 1
+                @constraint(m, x[i, j] + x[i-1, j] <= 1)
+            end
+            if j > 1
+                @constraint(m, x[i, j] + x[i, j-1] <= 1)
+            end
+            if i < n
+                @constraint(m, x[i, j] + x[i+1, j] <= 1)
+            end
+            if j < n
+                @constraint(m, x[i, j] + x[i, j+1] <= 1)
+            end
+        end
+    end
+
+    @objective(m, Min, sum(x))
+    # optimize!(m)
+    first_black = true
+    valid_solution = false
+    solution_final = nothing
+    for i in 1:n
+        for j in 1:n
+            optimize!(m)
+            if !valid_solution
+                println("Checking connectivity...")
+                solution = JuMP.value.(x)
+                if check_connectivity(solution, n)
+                    println("The white squares form a single connected group.")
+                    if termination_status(m) == MOI.OPTIMAL
+                        valid_solution = true
+                        break
+                    else
+                        println("Solution found, but is not optimal.")
+                        valid_solution = true
+                        break
+                    end
+                    
+                else
+                    println("The white squares do not form a single connected group.")
+                    println("Current value of solution[$i, $j]: ", solution[i, j])
+                    if solution[i, j] == 1  # black square
+                        println("Attempting to change (i, j) = ($i, $j) to white.")
+                        if !first_black
+                            delete(m, con_1)
+                        end
+                        @constraint(m, con_1, x[i, j] == 0)  # Change this black square to white
+                        first_black = false
+                        #solution = JuMP.value.(x)
+                        # break
+                    end
+                end
+            end
+            if valid_solution
+                solution_final = solution
+                break
+            end 
+        end
+    end
+    if !valid_solution
+        println("No valid solution found.")
+    end
+    return solution_final
+end
+
 
 """
 Heuristically solve an instance
 """
 function heuristicSolve()
 
-    # TODO
-    println("In file resolution.jl, in method heuristicSolve(), TODO: fix input and output, define the model")
-    
+
+
 end 
 
 """
@@ -150,6 +255,6 @@ function solveDataSet()
             include(outputFile)
             println(resolutionMethod[methodId], " optimal: ", isOptimal)
             println(resolutionMethod[methodId], " time: " * string(round(solveTime, sigdigits=2)) * "s\n")
-        end         
-    end 
+        end         
+    end 
 end
