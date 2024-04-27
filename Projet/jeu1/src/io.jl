@@ -23,7 +23,7 @@ inputFile: path of the input file
  A value can be an integer or a white space
 
 """
-function readMatrixFromFile(inputFile::String) :: Matrix{Int64}
+function readInputFile(inputFile::String) :: Matrix{Int64}
     # Open the input file
     datafile = open(inputFile)
     data = readlines(datafile)
@@ -40,13 +40,13 @@ function readMatrixFromFile(inputFile::String) :: Matrix{Int64}
     # Process each line in the data array
     for line in data
         # Remove leading and trailing white space and split by comma
-        lineSplit = split(strip(line), ",")
+        lineSplit = split(line, ",")
 
         # Only process lines with correct number of columns
         if length(lineSplit) == n
             for colNb in 1:n
                 # Replace empty entries with 0, otherwise convert to integer
-                t[lineNb, colNb] = lineSplit[colNb] != "" ? parse(Int64, lineSplit[colNb]) : 0
+                t[lineNb, colNb] = lineSplit[colNb] != " " ? parse(Int64, lineSplit[colNb]) : 0
             end
             lineNb += 1
         end
