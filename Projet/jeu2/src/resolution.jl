@@ -87,22 +87,61 @@ function cplexSolve(t::Matrix{Int64})
     end
 
     @objective(m, Min, sum(x))
+    # Primeira otimização
     optimize!(m)
 
+    # Verifique se a solução inicial foi encontrada
+    if termination_status(m) != MOI.OPTIMAL && termination_status(m) != MOI.FEASIBLE
+        println("No feasible or optimal solution found.")
+        return nothing
+    end
+
     solution = JuMP.value.(x)
-    if termination_status(m) == MOI.OPTIMAL
-        println("Optimal solution found. Checking connectivity...")
-        if check_connectivity(solution, n)
-            println("The white squares form a single connected group.")
-        else
-            println("The white squares do not form a single connected group.")
+
+    # Checando a conectividade da solução inicial
+    if !check_connectivity(solution, n)
+        println("Initial solution does not form a single connected group.")
+        # Tente transformar cada célula preta em branca e reotimize
+        for i in 1:n
+            for j in 1:n
+                if solution[i, j] == 1  # Célula preta
+                    constraint = @constraint(m, x[i, j] == 0)  # Tornar esta célula branca
+                    #set_value(x[i,j], 0)
+                    optimize!(m)
+
+                    # Cheque se a nova solução é viável
+                    if termination_status(m) == MOI.INFEASIBLE
+                        println("No feasible solution after changing cell ($i, $j) to white.")
+                        delete(m, constraint)
+                        continue
+                    end
+
+                    new_solution = JuMP.value.(x)
+                    if check_connectivity(new_solution, n)
+                        println("Modified solution is connected.")
+                        if termination_status(m) == MOI.OPTIMAL
+                            println("An optimal solution has been found after modification.")
+                            return new_solution
+                        else
+                            println("A feasible but not optimal solution was found after modification.")
+                            return new_solution
+                        end
+                    else
+                        println("Modified solution at cell ($i, $j) still not connected.")
+                    end
+                end
+            end
         end
+
+        println("No valid connected and optimal solution found after modifications.")
+        return nothing
     else
-        println("No optimal solution found.")
+        println("Initial solution is connected and optimal.")
     end
 
     return solution
 end
+
 
 
 """
