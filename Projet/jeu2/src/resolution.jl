@@ -90,36 +90,42 @@ function cplexSolve(t::Matrix{Int64})
     first_black = true
     valid_solution = false
     solution_final = nothing
+    optimize!(m)
     for i in 1:n
         for j in 1:n
-            optimize!(m)
             if !valid_solution
                 println("Checking connectivity...")
-                solution = JuMP.value.(x)
-                if check_connectivity(solution, n)
-                    println("The white squares form a single connected group.")
-                    if termination_status(m) == MOI.OPTIMAL
-                        valid_solution = true
-                        break
-                    else
-                        println("Solution found, but is not optimal.")
-                        valid_solution = true
-                        break
-                    end
-                    
-                else
-                    println("The white squares do not form a single connected group.")
-                    println("Current value of solution[$i, $j]: ", solution[i, j])
-                    if solution[i, j] == 1  # black square
-                        println("Attempting to change (i, j) = ($i, $j) to white.")
-                        if !first_black
-                            delete(m, con_1)
+                try
+                    solution = JuMP.value.(x)    
+                    if check_connectivity(solution, n)
+                        println("The white squares form a single connected group.")
+                        if termination_status(m) == MOI.OPTIMAL
+                            valid_solution = true
+                            break
+                        else
+                            println("Solution found, but is not optimal.")
+                            valid_solution = true
+                            break
                         end
-                        @constraint(m, con_1, x[i, j] == 0)  # Change this black square to white
-                        first_black = false
-                        #solution = JuMP.value.(x)
-                        # break
+                        
+                    else
+                        println("The white squares do not form a single connected group.")
+                        println("Current value of solution[$i, $j]: ", solution[i, j])
+                        if solution[i, j] == 1  # black square
+                            println("Attempting to change (i, j) = ($i, $j) to white.")
+                            if !first_black
+                                delete(m, con_1)
+                            end
+                            @constraint(m, con_1, x[i, j] == 0)  # Change this black square to white
+                            first_black = false
+                            #solution = JuMP.value.(x)
+                            # break
+                            optimize!(m)
+                        end
                     end
+                catch e
+                    # println("Error: ", e)
+                    println("Error, Current cell evaluation[$i, $j]: ")
                 end
             end
             if valid_solution
