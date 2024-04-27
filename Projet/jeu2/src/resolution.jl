@@ -8,26 +8,102 @@ TOL = 0.00001
 """
 Solve an instance with CPLEX
 """
-function cplexSolve()
+function dfs(graph, start, visited)
+    stack = [start]
+    while !isempty(stack)
+        vertex = pop!(stack)
+        if vertex ∉ visited
+            push!(visited, vertex)
+            for neighbor in setdiff(graph[vertex], visited)
+                push!(stack, neighbor)
+            end
+        end
+    end
+end
 
-    # Create the model
-    m = Model(with_optimizer(CPLEX.Optimizer))
+function check_connectivity(solution, n)
+    graph = Dict()
+    for i in 1:n
+        for j in 1:n
+            if solution[i, j] == 0
+                neighbors = Set()
+                if i > 1 && solution[i-1, j] == 0
+                    push!(neighbors, (i-1, j))
+                end
+                if i < n && solution[i+1, j] == 0
+                    push!(neighbors, (i+1, j))
+                end
+                if j > 1 && solution[i, j-1] == 0
+                    push!(neighbors, (i, j-1))
+                end
+                if j < n && solution[i, j+1] == 0
+                    push!(neighbors, (i, j+1))
+                end
+                graph[(i, j)] = neighbors
+            end
+        end
+    end
+    # Perform DFS to check connectivity
+    visited = Set()
+    start_node = first(keys(graph))
+    dfs(graph, start_node, visited)
+    return length(visited) == length(keys(graph))
+end
 
-    # TODO
-    println("In file resolution.jl, in method cplexSolve(), TODO: fix input and output, define the model")
+function cplexSolve(t::Matrix{Int64})
+    n = size(t, 1)
+    m = Model(CPLEX.Optimizer)
 
-    # Start a chronometer
-    start = time()
+    @variable(m, x[1:n, 1:n], Bin)
 
-    # Solve the model
+    for i in 1:n
+        for j in 1:n
+            for k in 1:n
+                if t[i, j] == t[i, k] && j != k
+                    @constraint(m, x[i, j] + x[i, k] >= 1)
+                end
+                if t[i, j] == t[k, j] && i != k
+                    @constraint(m, x[i, j] + x[k, j] >= 1)
+                end
+            end
+        end
+    end
+
+    for i in 1:n
+        for j in 1:n
+            if i > 1
+                @constraint(m, x[i, j] + x[i-1, j] <= 1)
+            end
+            if j > 1
+                @constraint(m, x[i, j] + x[i, j-1] <= 1)
+            end
+            if i < n
+                @constraint(m, x[i, j] + x[i+1, j] <= 1)
+            end
+            if j < n
+                @constraint(m, x[i, j] + x[i, j+1] <= 1)
+            end
+        end
+    end
+
+    @objective(m, Min, sum(x))
     optimize!(m)
 
-    # Return:
-    # 1 - true if an optimum is found
-    # 2 - the resolution time
-    return JuMP.primal_status(m) == JuMP.MathOptInterface.FEASIBLE_POINT, time() - start
-    
+    solution = JuMP.value.(x)
+    if termination_status(m) == MOI.OPTIMAL
+        println("Optimal solution found. Checking connectivity...")
+        if check_connectivity(solution, n)
+            println("The white squares form a single connected group.")
+        else
+            println("The white squares do not form a single connected group.")
+        end
+    else
+        println("No optimal solution found.")
+    end
+
+    return solution
 end
+
 
 """
 Heuristically solve an instance
