@@ -147,12 +147,59 @@ end
 """
 Heuristically solve an instance
 """
-function heuristicSolve()
+function heuristicSolve(t::Matrix{Int64})
+    n = size(t, 1)
+    solution = copy(t)
+    times_total = Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}}()
+    isSingle = false
 
-    # TODO
-    println("In file resolution.jl, in method heuristicSolve(), TODO: fix input and output, define the model")
-    
-end 
+    while !isSingle
+        all_single = true
+        line_groups = Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int}}}()
+        column_groups = Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int}}}()
+
+        for i in 1:n
+            for j in 1:n
+                line_times, column_times = count_times(solution, (i, j))
+                times_total[(i, j)] = (line_times, column_times, solution[i,j])
+                if line_times > 0 || column_times > 0
+                    all_single = false
+                end
+
+            end
+        end
+        isSingle = all_single
+    end
+end
+
+function verifyBlack(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
+    return 
+end
+
+function count_times(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
+    n = size(solution, 1)
+    (line, column) = coordinate
+    line_times = 0
+    column_times = 0
+
+    target = solution[line, column]
+
+    for j in 1:n
+        if solution[line, j] == target && j != column
+            line_times += 1
+        end
+    end
+
+    for i in 1:n
+        if solution[i, column] == target && i != line
+            column_times += 1
+        end
+    end
+
+    return line_times, column_times
+end
+
+
 
 """
 Solve all the instances contained in "../data" through CPLEX and heuristics
