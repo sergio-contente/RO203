@@ -15,6 +15,7 @@ function cplexSolve(t::Matrix{Int64})
 
     @variable(m, flips[1:n, 1:n], Bin)
     @variable(m, choice[i=1:n, j=1:n, k=1:3], Bin)  # Binary variables for choosing flips
+    @variable(m, local_flips[1:n, 1:n], Int)
 
     for i in 1:n
         for j in 1:n
@@ -95,20 +96,23 @@ function solveDataSet()
     for file in filter(x -> occursin(".txt", x), readdir(dataFolder))
         println("-- Resolution of ", file)
         t = readInputFile(dataFolder * file)
-
+        
         # For each resolution method
-        for methodId in 1:eachindex(resolutionMethod)
+        for methodId in 1:length(resolutionMethod)
             outputFile = resolutionFolder[methodId] * "/" * file
-
+            
             if !isfile(outputFile)
                 fout = open(outputFile, "w")  
                 resolutionTime = -1
                 isOptimal = false
-
+                
                 if resolutionMethod[methodId] == "cplex"
-                    isOptimal, resolutionTime = cplexSolve(t)
+                    # Solve the instance with CPLEX
+                    isOptimal, solution, resolutionTime = cplexSolve(t)
+                    
                     if isOptimal
                         println(fout, "Solution found.")
+                        
                     else
                         println(fout, "No solution found.")
                     end
@@ -118,19 +122,20 @@ function solveDataSet()
                         isOptimal, resolutionTime = heuristicSolve()
                         resolutionTime = time() - startingTime
                     end
-
+                    
                     if isOptimal
                         println(fout, "Heuristic solution found.")
                     else
                         println(fout, "No solution found.")
                     end
                 end
-
+                println(fout, solution)
                 println(fout, "solveTime = ", resolutionTime)
                 println(fout, "isOptimal = ", isOptimal)
                 close(fout)
             end
-
+            
+            println("Instance read")
             include(outputFile)
             println(resolutionMethod[methodId], " optimal: ", isOptimal)
             println(resolutionMethod[methodId], " time: ", round(resolutionTime, digits=2), "s")

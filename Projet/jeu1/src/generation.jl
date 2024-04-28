@@ -11,8 +11,8 @@ Argument
 Return
 - t: the generated grid Matrix{Int64}
 """
-function generateInstance(n::Int64, flips::Float64)
-    t = Matrix{Int64}(1, n, n)
+function generateInstance(n::Int64, flips::Int64)
+    t = ones(n, n)
 
     for i in 1:flips
         x = rand(1:n)
@@ -32,7 +32,7 @@ function generateInstance(n::Int64, flips::Float64)
         end
     end
 
-    return t
+    return Int.(t)
 end
 
 """
