@@ -1,0 +1,3 @@
+Solution = [0 0 1 1; 0 0 0 0; 0 0 0 0; 0 0 1 1]
+solveTime = 0.021000146865844727
+isOptimal = true

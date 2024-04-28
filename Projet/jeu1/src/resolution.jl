@@ -50,7 +50,7 @@ function cplexSolve(t::Matrix{Int64})
     optimize!(m)
 
     if termination_status(m) == MOI.OPTIMAL
-        solution_flips = convert(Matrix{Int64}, JuMP.value.(flips))
+        solution_flips = convert(Matrix{Int64}, round.(JuMP.value.(flips)))
     #     println("Optimal solution found. Flips needed:")
     #     println(solution_flips)
     # else
@@ -111,7 +111,7 @@ function solveDataSet()
                     isOptimal, solution, resolutionTime = cplexSolve(t)
                     
                     if isOptimal
-                        println(fout, "Solution found.")
+                        # println(fout, "Solution found.")
                         
                     else
                         println(fout, "No solution found.")
@@ -129,7 +129,7 @@ function solveDataSet()
                         println(fout, "No solution found.")
                     end
                 end
-                println(fout, solution)
+                println(fout, "Solution = $solution")
                 println(fout, "solveTime = ", resolutionTime)
                 println(fout, "isOptimal = ", isOptimal)
                 close(fout)

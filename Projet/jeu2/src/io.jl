@@ -256,20 +256,39 @@ function readResultFile(filePath::String)
 
     solveTime = nothing
     isOptimal = false
+    solution = []
 
     for line in data
-        line = strip(line)  # Ensure whitespace is removed
+        line = strip(line)  # Clean up whitespace
         if startswith(line, "solveTime =")
-            # Extract and parse the floating-point number after "="
-            solveTime = parse(Float64, split(line, "=")[2])
+            # Attempt to parse the solve time safely
+            solveTimeString = strip(split(line, "=")[2])
+            solveTime = tryparse(Float64, solveTimeString)
+            if isnothing(solveTime)
+                println("Warning: Failed to parse solve time in $filePath: '$solveTimeString'")
+            end
         elseif startswith(line, "isOptimal =")
-            # Extract and parse the boolean value after "="
-            isOptimal = parse(Bool, strip(split(line, "=")[2]))
+            isOptimalString = strip(split(line, "=")[2])
+            isOptimal = tryparse(Bool, isOptimalString)
+            if isnothing(isOptimal)
+                println("Warning: Failed to parse isOptimal in $filePath: '$isOptimalString'")
+            end
+        elseif startswith(line, "Solution:")
+            continue  # Ignore the "Solution:" marker
+        else
+            # Optionally process the solution matrix here if needed
+            try
+                row = parse.(Float64, split(line, ","))
+                push!(solution, row)
+            catch
+                println("Warning: Failed to parse matrix row in $filePath: '$line'")
+            end
         end
     end
 
-    return solveTime, isOptimal
+    return solveTime, isOptimal, solution
 end
+
 
 
 function performanceDiagram(outputFile::String)
@@ -422,8 +441,8 @@ Prerequisites:
 """
 function resultsArray(outputFile::String)
     
-    resultFolder = "res/"
-    dataFolder = "data/"
+    resultFolder = "../res/"
+    dataFolder = "../data/"
     
     # Maximal number of files in a subfolder
     maxSize = 0
@@ -522,54 +541,29 @@ function resultsArray(outputFile::String)
 """
     println(fout, header)
 
-    # On each page an array will contain at most maxInstancePerPage lines with results
+    # Process each instance
     maxInstancePerPage = 30
     id = 1
-
-    # For each solved files
-    for solvedInstance in solvedInstances
-
-        # If we do not start a new array on a new page
-        if rem(id, maxInstancePerPage) == 0
-            println(fout, footer, "\\newpage")
-            println(fout, header)
-        end 
-
-        # Replace the potential underscores '_' in file names
-        print(fout, replace(solvedInstance, "_" => "\\_"))
-
-        # For each resolution method
-        for method in folderName
-
-            path = resultFolder * method * "/" * solvedInstance
-
-            # If the instance has been solved by this method
-            if isfile(path)
-
-                include("../"*path)
-
-                println(fout, " & ", round(solveTime, digits=2), " & ")
-
-                if isOptimal
-                    println(fout, "\$\\times\$")
-                end 
-                
-            # If the instance has not been solved by this method
-            else
-                println(fout, " & - & - ")
+    for solvedInstance in readdir(resultFolder)
+        if isfile(joinpath(resultFolder, solvedInstance))
+            if rem(id, maxInstancePerPage) == 0
+                println(fout, "\\end{tabular}\n\\newpage\n\\begin{tabular}{l}")
             end
+            file_path = joinpath(resultFolder, solvedInstance)
+            solveTime, isOptimal, _ = readResultFile(file_path)
+            println(fout, replace(solvedInstance, "_" => "\\_"), " & ", round(solveTime, digits=2), " & ")
+            if isOptimal
+                println(fout, "\$\\times\$")
+            else
+                println(fout, " - ")
+            end
+            println(fout, "\\\\")
+            id += 1
         end
-
-        println(fout, "\\\\")
-
-        id += 1
     end
 
-    # Print the end of the latex file
-    println(fout, footer)
-
+    # Close the table and document
+    println(fout, "\\end{tabular}\n\\end{center}")
     println(fout, "\\end{document}")
-
     close(fout)
-    
 end 

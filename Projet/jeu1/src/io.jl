@@ -459,7 +459,7 @@ function resultsArray(outputFile::String)
 
             # If the instance has been solved by this method
             if isfile(path)
-
+                println(path)
                 include(path)
 
                 println(fout, " & ", round(solveTime, digits=2), " & ")

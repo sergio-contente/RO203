@@ -1,0 +1,567 @@
+\documentclass{article}
+
+\usepackage[french]{babel}
+\usepackage [utf8] {inputenc} % utf-8 / latin1 
+\usepackage{multicol}
+
+\setlength{\hoffset}{-18pt}
+\setlength{\oddsidemargin}{0pt} % Marge gauche sur pages impaires
+\setlength{\evensidemargin}{9pt} % Marge gauche sur pages paires
+\setlength{\marginparwidth}{54pt} % Largeur de note dans la marge
+\setlength{\textwidth}{481pt} % Largeur de la zone de texte (17cm)
+\setlength{\voffset}{-18pt} % Bon pour DOS
+\setlength{\marginparsep}{7pt} % Séparation de la marge
+\setlength{\topmargin}{0pt} % Pas de marge en haut
+\setlength{\headheight}{13pt} % Haut de page
+\setlength{\headsep}{10pt} % Entre le haut de page et le texte
+\setlength{\footskip}{27pt} % Bas de page + séparation
+\setlength{\textheight}{668pt} % Hauteur de la zone de texte (25cm)
+
+\begin{document}
+\begin{center}
+\renewcommand{\arraystretch}{1.4} 
+\begin{tabular}{lrr}
+	\hline
+ & \multicolumn{2}{c}{\textbf{cplex}}\\
+\textbf{Instance}  & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline
+
+instance\_t10\_f12\_i1.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f12\_i10.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f12\_i2.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f12\_i3.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f12\_i4.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f12\_i5.txt & 0.05 & 
+$\times$
+\\
+instance\_t10\_f12\_i6.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f12\_i7.txt & 0.06 & 
+$\times$
+\\
+instance\_t10\_f12\_i8.txt & 0.02 & 
+$\times$
+\\
+instance\_t10\_f12\_i9.txt & 0.05 & 
+$\times$
+\\
+instance\_t10\_f16\_i1.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f16\_i10.txt & 0.11 & 
+$\times$
+\\
+instance\_t10\_f16\_i2.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f16\_i3.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f16\_i4.txt & 0.06 & 
+$\times$
+\\
+instance\_t10\_f16\_i5.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f16\_i6.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f16\_i7.txt & 0.13 & 
+$\times$
+\\
+instance\_t10\_f16\_i8.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f16\_i9.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f20\_i1.txt & 0.05 & 
+$\times$
+\\
+instance\_t10\_f20\_i10.txt & 0.06 & 
+$\times$
+\\
+instance\_t10\_f20\_i2.txt & 0.05 & 
+$\times$
+\\
+instance\_t10\_f20\_i3.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f20\_i4.txt & 0.06 & 
+$\times$
+\\
+instance\_t10\_f20\_i5.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f20\_i6.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f20\_i7.txt & 0.09 & 
+$\times$
+\\
+instance\_t10\_f20\_i8.txt & 0.04 & 
+$\times$
+\\
+\hline\end{tabular}
+\end{center}
+
+\newpage
+\begin{center}
+\renewcommand{\arraystretch}{1.4} 
+\begin{tabular}{lrr}
+	\hline
+ & \multicolumn{2}{c}{\textbf{cplex}}\\
+\textbf{Instance}  & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline
+
+instance\_t10\_f20\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f8\_i1.txt & 0.02 & 
+$\times$
+\\
+instance\_t10\_f8\_i10.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f8\_i2.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f8\_i3.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f8\_i4.txt & 0.05 & 
+$\times$
+\\
+instance\_t10\_f8\_i5.txt & 0.02 & 
+$\times$
+\\
+instance\_t10\_f8\_i6.txt & 0.02 & 
+$\times$
+\\
+instance\_t10\_f8\_i7.txt & 0.04 & 
+$\times$
+\\
+instance\_t10\_f8\_i8.txt & 0.03 & 
+$\times$
+\\
+instance\_t10\_f8\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i1.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i10.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f12\_i2.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i3.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i4.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i5.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f12\_i6.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f12\_i7.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i8.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f12\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f16\_i1.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f16\_i10.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f16\_i2.txt & 0.04 & 
+$\times$
+\\
+instance\_t4\_f16\_i3.txt & 0.08 & 
+$\times$
+\\
+instance\_t4\_f16\_i4.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f16\_i5.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f16\_i6.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f16\_i7.txt & 0.05 & 
+$\times$
+\\
+instance\_t4\_f16\_i8.txt & 0.06 & 
+$\times$
+\\
+\hline\end{tabular}
+\end{center}
+
+\newpage
+\begin{center}
+\renewcommand{\arraystretch}{1.4} 
+\begin{tabular}{lrr}
+	\hline
+ & \multicolumn{2}{c}{\textbf{cplex}}\\
+\textbf{Instance}  & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline
+
+instance\_t4\_f16\_i9.txt & 0.06 & 
+$\times$
+\\
+instance\_t4\_f20\_i1.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f20\_i10.txt & 0.05 & 
+$\times$
+\\
+instance\_t4\_f20\_i2.txt & 0.05 & 
+$\times$
+\\
+instance\_t4\_f20\_i3.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f20\_i4.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f20\_i5.txt & 0.05 & 
+$\times$
+\\
+instance\_t4\_f20\_i6.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f20\_i7.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f20\_i8.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f20\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f8\_i1.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f8\_i10.txt & 0.07 & 
+$\times$
+\\
+instance\_t4\_f8\_i2.txt & 0.04 & 
+$\times$
+\\
+instance\_t4\_f8\_i3.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f8\_i4.txt & 0.04 & 
+$\times$
+\\
+instance\_t4\_f8\_i5.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f8\_i6.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f8\_i7.txt & 0.02 & 
+$\times$
+\\
+instance\_t4\_f8\_i8.txt & 0.03 & 
+$\times$
+\\
+instance\_t4\_f8\_i9.txt & 0.02 & 
+$\times$
+\\
+instance\_t6\_f12\_i1.txt & 0.1 & 
+$\times$
+\\
+instance\_t6\_f12\_i10.txt & 0.02 & 
+$\times$
+\\
+instance\_t6\_f12\_i2.txt & 0.05 & 
+$\times$
+\\
+instance\_t6\_f12\_i3.txt & 0.02 & 
+$\times$
+\\
+instance\_t6\_f12\_i4.txt & 0.13 & 
+$\times$
+\\
+instance\_t6\_f12\_i5.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f12\_i6.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f12\_i7.txt & 0.02 & 
+$\times$
+\\
+instance\_t6\_f12\_i8.txt & 0.03 & 
+$\times$
+\\
+\hline\end{tabular}
+\end{center}
+
+\newpage
+\begin{center}
+\renewcommand{\arraystretch}{1.4} 
+\begin{tabular}{lrr}
+	\hline
+ & \multicolumn{2}{c}{\textbf{cplex}}\\
+\textbf{Instance}  & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline
+
+instance\_t6\_f12\_i9.txt & 0.02 & 
+$\times$
+\\
+instance\_t6\_f16\_i1.txt & 0.05 & 
+$\times$
+\\
+instance\_t6\_f16\_i10.txt & 0.07 & 
+$\times$
+\\
+instance\_t6\_f16\_i2.txt & 0.09 & 
+$\times$
+\\
+instance\_t6\_f16\_i3.txt & 0.05 & 
+$\times$
+\\
+instance\_t6\_f16\_i4.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f16\_i5.txt & 0.1 & 
+$\times$
+\\
+instance\_t6\_f16\_i6.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f16\_i7.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f16\_i8.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f16\_i9.txt & 0.09 & 
+$\times$
+\\
+instance\_t6\_f20\_i1.txt & 0.1 & 
+$\times$
+\\
+instance\_t6\_f20\_i10.txt & 0.05 & 
+$\times$
+\\
+instance\_t6\_f20\_i2.txt & 0.09 & 
+$\times$
+\\
+instance\_t6\_f20\_i3.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f20\_i4.txt & 0.13 & 
+$\times$
+\\
+instance\_t6\_f20\_i5.txt & 0.14 & 
+$\times$
+\\
+instance\_t6\_f20\_i6.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f20\_i7.txt & 0.06 & 
+$\times$
+\\
+instance\_t6\_f20\_i8.txt & 0.06 & 
+$\times$
+\\
+instance\_t6\_f20\_i9.txt & 0.08 & 
+$\times$
+\\
+instance\_t6\_f8\_i1.txt & 0.11 & 
+$\times$
+\\
+instance\_t6\_f8\_i10.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f8\_i2.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f8\_i3.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f8\_i4.txt & 0.04 & 
+$\times$
+\\
+instance\_t6\_f8\_i5.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f8\_i6.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f8\_i7.txt & 0.03 & 
+$\times$
+\\
+instance\_t6\_f8\_i8.txt & 0.03 & 
+$\times$
+\\
+\hline\end{tabular}
+\end{center}
+
+\newpage
+\begin{center}
+\renewcommand{\arraystretch}{1.4} 
+\begin{tabular}{lrr}
+	\hline
+ & \multicolumn{2}{c}{\textbf{cplex}}\\
+\textbf{Instance}  & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline
+
+instance\_t6\_f8\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f12\_i1.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f12\_i10.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f12\_i2.txt & 0.05 & 
+$\times$
+\\
+instance\_t8\_f12\_i3.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f12\_i4.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f12\_i5.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f12\_i6.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f12\_i7.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f12\_i8.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f12\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f16\_i1.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f16\_i10.txt & 0.06 & 
+$\times$
+\\
+instance\_t8\_f16\_i2.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f16\_i3.txt & 0.05 & 
+$\times$
+\\
+instance\_t8\_f16\_i4.txt & 0.05 & 
+$\times$
+\\
+instance\_t8\_f16\_i5.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f16\_i6.txt & 0.05 & 
+$\times$
+\\
+instance\_t8\_f16\_i7.txt & 0.07 & 
+$\times$
+\\
+instance\_t8\_f16\_i8.txt & 0.05 & 
+$\times$
+\\
+instance\_t8\_f16\_i9.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f20\_i1.txt & 0.09 & 
+$\times$
+\\
+instance\_t8\_f20\_i10.txt & 0.25 & 
+$\times$
+\\
+instance\_t8\_f20\_i2.txt & 0.07 & 
+$\times$
+\\
+instance\_t8\_f20\_i3.txt & 0.05 & 
+$\times$
+\\
+instance\_t8\_f20\_i4.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f20\_i5.txt & 0.06 & 
+$\times$
+\\
+instance\_t8\_f20\_i6.txt & 0.12 & 
+$\times$
+\\
+instance\_t8\_f20\_i7.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f20\_i8.txt & 0.04 & 
+$\times$
+\\
+\hline\end{tabular}
+\end{center}
+
+\newpage
+\begin{center}
+\renewcommand{\arraystretch}{1.4} 
+\begin{tabular}{lrr}
+	\hline
+ & \multicolumn{2}{c}{\textbf{cplex}}\\
+\textbf{Instance}  & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline
+
+instance\_t8\_f20\_i9.txt & 0.06 & 
+$\times$
+\\
+instance\_t8\_f8\_i1.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f8\_i10.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f8\_i2.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f8\_i3.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f8\_i4.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f8\_i5.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f8\_i6.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f8\_i7.txt & 0.04 & 
+$\times$
+\\
+instance\_t8\_f8\_i8.txt & 0.03 & 
+$\times$
+\\
+instance\_t8\_f8\_i9.txt & 0.03 & 
+$\times$
+\\
+\hline\end{tabular}
+\end{center}
+
+
+\end{document}
