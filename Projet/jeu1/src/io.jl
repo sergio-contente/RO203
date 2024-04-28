@@ -9,25 +9,172 @@ Read an instance from an input file
 
 - Argument:
 inputFile: path of the input file
-"""
-function readInputFile(inputFile::String)
 
+- Example of input file for a 5x5 grid
+1, , , ,1
+ , , , , ,
+1,1, ,1, ,
+1, , , , ,
+ ,1,1, , ,
+
+ - Prerequisites
+ Let n be the grid size.
+ Each line of the input file must contain n values separated by commas.
+ A value can be an integer or a white space
+
+"""
+function readInputFile(inputFile::String) :: Matrix{Int64}
     # Open the input file
     datafile = open(inputFile)
-
     data = readlines(datafile)
     close(datafile)
 
-    # For each line of the input file
+    # Assume the first non-empty line defines the number of columns
+    n = length(split(strip(data[1]), ","))
+
+    # Initialize the matrix with undefined integers
+    t = Matrix{Int64}(undef, n, n)
+
+    lineNb = 1
+
+    # Process each line in the data array
     for line in data
+        # Remove leading and trailing white space and split by comma
+        lineSplit = split(line, ",")
 
-        # TODO
-        println("In file io.jl, in method readInputFile(), TODO: read a line of the input file")
-
+        # Only process lines with correct number of columns
+        if length(lineSplit) == n
+            for colNb in 1:n
+                # Replace empty entries with 0, otherwise convert to integer
+                t[lineNb, colNb] = lineSplit[colNb] != " " ? parse(Int64, lineSplit[colNb]) : 0
+            end
+            lineNb += 1
+        end
     end
 
+    return t
 end
 
+
+"""
+Display a grid represented by a 2-dimensional array
+
+Argument:
+- t: array of size n*n with values in [0, 1] (0 if the cell is off)
+"""
+function displayGrid(t::Matrix{Int64})
+    n = size(t, 1)
+    
+    # Display the upper border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+    
+    # For each cell (l, c)
+    for l in 1:n
+        print("|")  # Start border of each row
+        for c in 1:n
+            if t[l, c] == 0
+                print(" - ")  # Print dash for zero values with spacing for alignment
+            else
+                print(" ", t[l, c], " ")  # Print the number with surrounding spaces
+            end
+        end
+        println("|")  # End border of each row
+    end
+
+    # Display the lower border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+end
+
+"""
+Display a solution represented by a 2-dimensional array
+
+Argument:
+- t: array of size n*n with values in [0, 1] (1 if the cell is clicked to solve)
+"""
+function displaySolution(t::Matrix{Int64})
+    n = size(t, 1)
+    
+    # Display the upper border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+    
+    # For each cell (l, c)
+    for l in 1:n
+        print("|")  # Start border of each row
+        for c in 1:n
+            if t[l, c] == 0
+                print(" - ")  # Print dash for zero values with spacing for alignment
+            else
+                print(" ", t[l, c], " ")  # Print the number with surrounding spaces
+            end
+        end
+        println("|")  # End border of each row
+    end
+
+    # Display the lower border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+end
+
+
+"""
+Save a grid in a text file
+
+Argument
+- t: 2-dimensional array of size n*n
+- outputFile: path of the output file
+"""
+function saveInstance(t::Matrix{Int64}, outputFile::String)
+
+    n = size(t, 1)
+
+    # Open the output file
+    writer = open(outputFile, "w")
+
+    # For each cell (l, c) of the grid
+    for l in 1:n
+        for c in 1:n
+
+            # Write its value
+            if t[l, c] == 0
+                print(writer, " ")
+            else
+                print(writer, t[l, c])
+            end
+
+            if c != n
+                print(writer, ",")
+            else
+                println(writer, "")
+            end
+        end
+    end
+
+    close(writer)
+    
+end 
+
+"""
+Write a solution in an output stream
+
+Arguments
+- fout: the output stream (usually an output file)
+- x: 2-dimensional variables array such that x[i, j, k] = 1 if cell is white or 0 otherwise
+"""
+function writeSolution(fout::IOStream, x::Array{VariableRef})
+
+    # Convert the solution from x[i, j] variables into t[i, j] variables
+    n = size(x, 1)
+    t = Matrix{Int64}(undef, n, n)
+    
+    for l in 1:n
+        for c in 1:n
+            t[l, c] = x[l, c]
+        end 
+    end
+
+    # Write the solution
+    writeSolution(fout, t)
+
+end
 
 """
 Create a pdf file which contains a performance diagram associated to the results of the ../res folder
@@ -226,7 +373,7 @@ function resultsArray(outputFile::String)
     header = raw"""
 \begin{center}
 \renewcommand{\arraystretch}{1.4} 
- \begin{tabular}{l"""
+\begin{tabular}{l"""
 
     # Name of the subfolder of the result folder (i.e, the resolution methods used)
     folderName = Array{String, 1}()
