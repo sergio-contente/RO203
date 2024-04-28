@@ -297,7 +297,7 @@ function resultsArray(outputFile::String)
     header = raw"""
 \begin{center}
 \renewcommand{\arraystretch}{1.4} 
- \begin{tabular}{l"""
+\begin{tabular}{l"""
 
     # Name of the subfolder of the result folder (i.e, the resolution methods used)
     folderName = Vector{String}()

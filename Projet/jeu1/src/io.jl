@@ -60,9 +60,38 @@ end
 Display a grid represented by a 2-dimensional array
 
 Argument:
-- t: array of size n*n with values in [0, n] (0 if the cell is empty)
+- t: array of size n*n with values in [0, 1] (0 if the cell is off)
 """
 function displayGrid(t::Matrix{Int64})
+    n = size(t, 1)
+    
+    # Display the upper border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+    
+    # For each cell (l, c)
+    for l in 1:n
+        print("|")  # Start border of each row
+        for c in 1:n
+            if t[l, c] == 0
+                print(" - ")  # Print dash for zero values with spacing for alignment
+            else
+                print(" ", t[l, c], " ")  # Print the number with surrounding spaces
+            end
+        end
+        println("|")  # End border of each row
+    end
+
+    # Display the lower border of the grid
+    println(" +" * "-"^(3*n-1) * "+") 
+end
+
+"""
+Display a solution represented by a 2-dimensional array
+
+Argument:
+- t: array of size n*n with values in [0, 1] (1 if the cell is clicked to solve)
+"""
+function displaySolution(t::Matrix{Int64})
     n = size(t, 1)
     
     # Display the upper border of the grid
@@ -321,7 +350,7 @@ function resultsArray(outputFile::String)
     header = raw"""
 \begin{center}
 \renewcommand{\arraystretch}{1.4} 
- \begin{tabular}{l"""
+\begin{tabular}{l"""
 
     # Name of the subfolder of the result folder (i.e, the resolution methods used)
     folderName = Array{String, 1}()

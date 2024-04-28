@@ -45,20 +45,19 @@ function cplexSolve(t::Matrix{Int64})
     end
 
     @objective(m, Min, sum(flips))
+    start = time()
     optimize!(m)
 
     if termination_status(m) == MOI.OPTIMAL
-        solution_flips = JuMP.value.(flips)
-        println("Optimal solution found. Flips needed:")
-        println(solution_flips)
-    else
-        println("No optimal solution found.")
+        solution_flips = convert(Matrix{Int64}, JuMP.value.(flips))
+    #     println("Optimal solution found. Flips needed:")
+    #     println(solution_flips)
+    # else
+    #     println("No optimal solution found.")
     end
 
-    return solution_flips
+    return termination_status(m) == MOI.OPTIMAL, solution_flips, time() - start 
 end
-
-
 
 
 """
@@ -98,7 +97,7 @@ function solveDataSet()
         t = readInputFile(dataFolder * file)
 
         # For each resolution method
-        for methodId in 1:length(resolutionMethod)
+        for methodId in 1:eachindex(resolutionMethod)
             outputFile = resolutionFolder[methodId] * "/" * file
 
             if !isfile(outputFile)
