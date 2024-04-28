@@ -121,10 +121,13 @@ function cplexSolve(t::Matrix{Int64})
                         println("Modified solution is connected.")
                         if termination_status(m) == MOI.OPTIMAL
                             println("An optimal solution has been found after modification.")
-                            return new_solution
+                            isOptimal = true
+                            resolutionTime = solve_time(m)
+                            return (new_solution, isOptimal, resolutionTime)
                         else
                             println("A feasible but not optimal solution was found after modification.")
-                            return new_solution
+                            resolutionTime = solve_time(m)
+                            return (new_solution, false, resolutionTime)
                         end
                     else
                         println("Modified solution at cell ($i, $j) still not connected.")
@@ -134,12 +137,14 @@ function cplexSolve(t::Matrix{Int64})
         end
 
         println("No valid connected and optimal solution found after modifications.")
-        return nothing
+        return (nothing, false, 0)
     else
         println("Initial solution is connected and optimal.")
+        resolutionTime = solve_time(m)
+        isOptimal = true
     end
 
-    return solution
+    return (solution, resolutionTime, isOptimal)
 end
 
 
@@ -338,116 +343,64 @@ function updateTimesTotal(solution::Matrix{Int64}, times_total::Dict)
 end
 
 """
-Solve all the instances contained in "../data" through CPLEX and heuristics
+Write the solution to the output file
+"""
+function writeSolution(fout, solution, resolutionTime, isOptimal)
+    println(fout, "Solution: ")
+    for row in eachrow(solution)
+        println(fout, join(row, ','))
+    end
+    println(fout, "solveTime = ", resolutionTime)
+    println(fout, "isOptimal = ", isOptimal)
+end
 
-The results are written in "../res/cplex" and "../res/heuristic"
-
-Remark: If an instance has previously been solved (either by cplex or the heuristic) it will not be solved again
+"""
+Modified solveDataSet function
 """
 function solveDataSet()
 
     dataFolder = "../data/"
     resFolder = "../res/"
-
-    # Array which contains the name of the resolution methods
-    resolutionMethod = ["cplex"]
-    #resolutionMethod = ["cplex", "heuristique"]
-
-    # Array which contains the result folder of each resolution method
-    resolutionFolder = resFolder .* resolutionMethod
+    resolutionMethods = ["cplex"] # "heuristic"]  # Add "heuristic" if needed
 
     # Create each result folder if it does not exist
-    for folder in resolutionFolder
+    for method in resolutionMethods
+        folder = resFolder * method
         if !isdir(folder)
             mkdir(folder)
         end
     end
-            
-    global isOptimal = false
-    global solveTime = -1
 
-    # For each instance
-    # (for each file in folder dataFolder which ends by ".txt")
-    for file in filter(x->occursin(".txt", x), readdir(dataFolder))  
-        
-        println("-- Resolution of ", file)
-        readInputFile(dataFolder * file)
+    # Process each file in the data directory
+    for file in readdir(dataFolder)
+        if occursin(".txt", file)
+            println("-- Resolving ", file)
+            instancePath = dataFolder * file
+            t = readInputFile(instancePath)
 
-        # TODO
-        println("In file resolution.jl, in method solveDataSet(), TODO: read value returned by readInputFile()")
-        
-        # For each resolution method
-        for methodId in 1:size(resolutionMethod, 1)
-            
-            outputFile = resolutionFolder[methodId] * "/" * file
+            for method in resolutionMethods
+                outputFile = resFolder * method * "/" * file
 
-            # If the instance has not already been solved by this method
-            if !isfile(outputFile)
-                
-                fout = open(outputFile, "w")  
+                # Check if the solution has already been generated
+                if !isfile(outputFile)
+                    fout = open(outputFile, "w")
+                    resolutionTime, isOptimal = 0.0, false
 
-                resolutionTime = -1
-                isOptimal = false
-                
-                # If the method is cplex
-                if resolutionMethod[methodId] == "cplex"
-                    
-                    # TODO 
-                    println("In file resolution.jl, in method solveDataSet(), TODO: fix cplexSolve() arguments and returned values")
-                    
-                    # Solve it and get the results
-                    isOptimal, resolutionTime = cplexSolve()
-                    
-                    # If a solution is found, write it
-                    if isOptimal
-                        # TODO
-                        println("In file resolution.jl, in method solveDataSet(), TODO: write cplex solution in fout") 
+                    if method == "cplex"
+                        solution, resolutionTime, isOptimal = cplexSolve(t)
+                    elseif method == "heuristic"
+                        solution, resolutionTime, isOptimal = heuristicSolve(t)
                     end
 
-                # If the method is one of the heuristics
-                else
-                    
-                    isSolved = false
-
-                    # Start a chronometer 
-                    startingTime = time()
-                    
-                    # While the grid is not solved and less than 100 seconds are elapsed
-                    while !isOptimal && resolutionTime < 100
-                        
-                        # TODO 
-                        println("In file resolution.jl, in method solveDataSet(), TODO: fix heuristicSolve() arguments and returned values")
-                        
-                        # Solve it and get the results
-                        isOptimal, resolutionTime = heuristicSolve()
-
-                        # Stop the chronometer
-                        resolutionTime = time() - startingTime
-                        
+                    if solution !== nothing
+                        writeSolution(fout, solution, resolutionTime, isOptimal)
+                    else
+                        println(fout, "No valid solution found.")
                     end
 
-                    # Write the solution (if any)
-                    if isOptimal
-
-                        # TODO
-                        println("In file resolution.jl, in method solveDataSet(), TODO: write the heuristic solution in fout")
-                        
-                    end 
+                    close(fout)
                 end
-
-                println(fout, "solveTime = ", resolutionTime) 
-                println(fout, "isOptimal = ", isOptimal)
-                
-                # TODO
-                println("In file resolution.jl, in method solveDataSet(), TODO: write the solution in fout") 
-                close(fout)
             end
-
-
-            # Display the results obtained with the method on the current instance
-            include(outputFile)
-            println(resolutionMethod[methodId], " optimal: ", isOptimal)
-            println(resolutionMethod[methodId], " time: " * string(round(solveTime, sigdigits=2)) * "s\n")
-        end         
-    end 
+        end
+    end
 end
