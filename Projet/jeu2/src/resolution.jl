@@ -2,6 +2,7 @@
 using CPLEX
 
 include("generation.jl")
+include("heuristic.jl")
 
 TOL = 0.00001
 
@@ -181,14 +182,16 @@ function heuristicSolve(t::Matrix{Int64})
             println("TIE É TRUE")
             saved_state = copy(solution)  # Salvar estado do jogo apenas quando há empate
             
-            if tryMarking(solution, best_coordinate)  # Tentar marcar a melhor coordenada
-            else tryMarking(solution, second_best_coordinate)  # Tentar marcar a segunda melhor coordenada
+            if tryMarking(solution, best_coordinate)
+                println("marcando com a best coord")  # Tentar marcar a melhor coordenada
+            else tryMarking(solution, second_best_coordinate)
+                println("marcando com a second best coord")  # Tentar marcar a segunda melhor coordenada
             end
 
             if !heuristicCheckConnectivity(solution)
                 println("GRAFO N CONECTADO")
                 solution = saved_state  # Voltar ao estado salvo se não estiver conectado
-                tryMarking!(solution, second_best_coordinate)  # Tentar com a segunda melhor coordenada
+                tryMarking(solution, second_best_coordinate)  # Tentar com a segunda melhor coordenada
             end
         else
             println("TIE É FALSE")
@@ -204,6 +207,7 @@ function heuristicSolve(t::Matrix{Int64})
     end
     println("JOGO FINAL: ")
     println(solution)
+    return solution
 end
 
 function tryMarking(solution, coord)
@@ -212,6 +216,7 @@ function tryMarking(solution, coord)
         solution[i,j] = -1  # Marcar preto
         return true
     end
+    println("n consegui marcar :(")
     return false
 end
 
@@ -361,7 +366,7 @@ function solveDataSet()
 
     dataFolder = "../data/"
     resFolder = "../res/"
-    resolutionMethods = ["cplex"] # "heuristic"]  # Add "heuristic" if needed
+    resolutionMethods = ["cplex", "heuristic"] # "heuristic"]  # Add "heuristic" if needed
 
     # Create each result folder if it does not exist
     for method in resolutionMethods
@@ -389,7 +394,9 @@ function solveDataSet()
                     if method == "cplex"
                         solution, resolutionTime, isOptimal = cplexSolve(t)
                     elseif method == "heuristic"
-                        solution, resolutionTime, isOptimal = heuristicSolve(t)
+                        time_start = time()
+                        solution = heuristicSolve2(t)
+                        resolutionTime = time() - time_start
                     end
 
                     if solution !== nothing

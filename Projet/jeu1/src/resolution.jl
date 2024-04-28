@@ -50,7 +50,9 @@ function cplexSolve(t::Matrix{Int64})
     optimize!(m)
 
     if termination_status(m) == MOI.OPTIMAL
-        solution_flips = convert(Matrix{Int64}, round.(JuMP.value.(flips)))
+        # solution_flips = convert(Matrix{Int64}, round.(JuMP.value.(flips)))
+        solution_flips = round.(JuMP.value.(flips))
+
     #     println("Optimal solution found. Flips needed:")
     #     println(solution_flips)
     # else
@@ -59,6 +61,30 @@ function cplexSolve(t::Matrix{Int64})
 
     return termination_status(m) == MOI.OPTIMAL, solution_flips, time() - start 
 end
+
+"""
+write the solution in a file
+"""
+function writeSolution(fout, solution, resolutionTime, isOptimal)
+    println(fout, "Solution: ")
+    for row in eachrow(solution)
+        println(fout, join(row, ','))
+    end
+    println(fout, "solveTime = ", resolutionTime)
+    println(fout, "isOptimal = ", isOptimal)
+end
+
+"""
+function writeSolution(fout, solution, resolutionTime, isOptimal)
+    write(fout, "Solution:")
+    for row in eachrow(solution)
+        write(fout, join(row, ' '))
+    end
+    write(fout, "solveTime = ", resolutionTime)
+    write(fout, "isOptimal = ", isOptimal)
+end
+"""
+
 
 
 """
@@ -75,70 +101,127 @@ Solve all the instances contained in "../data" through CPLEX and heuristics
 The results are written in "../res/cplex" and "../res/heuristic"
 Remark: If an instance has previously been solved (either by cplex or the heuristic) it will not be solved again
 """
+
 function solveDataSet()
+
     dataFolder = "../data/"
     resFolder = "../res/"
-
-    resolutionMethod = ["cplex"]  # Assuming only CPLEX is used for now
-    resolutionFolder = resFolder .* resolutionMethod
+    resolutionMethods = ["cplex"] # "heuristic"]  # Add "heuristic" if needed
 
     # Create each result folder if it does not exist
-    for folder in resolutionFolder
+    for method in resolutionMethods
+        folder = resFolder * method
         if !isdir(folder)
             mkdir(folder)
         end
     end
 
-    global isOptimal = false
-    global solveTime = -1
+    # Process each file in the data directory
+    for file in readdir(dataFolder)
+        if occursin(".txt", file)
+            println("-- Resolving ", file)
+            instancePath = dataFolder * file
+            t = readInputFile(instancePath)
 
-    # For each instance (for each file in folder dataFolder which ends by ".txt")
-    for file in filter(x -> occursin(".txt", x), readdir(dataFolder))
-        println("-- Resolution of ", file)
-        t = readInputFile(dataFolder * file)
-        
-        # For each resolution method
-        for methodId in 1:length(resolutionMethod)
-            outputFile = resolutionFolder[methodId] * "/" * file
-            
-            if !isfile(outputFile)
-                fout = open(outputFile, "w")  
-                resolutionTime = -1
-                isOptimal = false
-                
-                if resolutionMethod[methodId] == "cplex"
-                    # Solve the instance with CPLEX
-                    isOptimal, solution, resolutionTime = cplexSolve(t)
-                    
-                    if isOptimal
-                        # println(fout, "Solution found.")
-                        
+            for method in resolutionMethods
+                outputFile = resFolder * method * "/" * file
+
+                # Check if the solution has already been generated
+                if !isfile(outputFile)
+                    fout = open(outputFile, "w")
+                    resolutionTime, isOptimal = 0.0, false
+
+                    if method == "cplex"
+                         isOptimal, solution, resolutionTime = cplexSolve(t)
+                    elseif method == "heuristic"
+                        time_start = time()
+                        solution = heuristicSolve(t)
+                        resolutionTime = time() - time_start
+                    end
+
+                    if solution !== nothing
+                        writeSolution(fout, solution, resolutionTime, isOptimal)
                     else
-                        println(fout, "No solution found.")
+                        println(fout, "No valid solution found.")
                     end
-                else
-                    startingTime = time()
-                    while !isOptimal && resolutionTime < 100
-                        isOptimal, resolutionTime = heuristicSolve()
-                        resolutionTime = time() - startingTime
-                    end
-                    
-                    if isOptimal
-                        println(fout, "Heuristic solution found.")
-                    else
-                        println(fout, "No solution found.")
-                    end
+
+                    close(fout)
                 end
-                println(fout, "Solution = $solution")
-                println(fout, "solveTime = ", resolutionTime)
-                println(fout, "isOptimal = ", isOptimal)
-                close(fout)
             end
-            
-            println("Instance read")
-            include(outputFile)
-            println(resolutionMethod[methodId], " optimal: ", isOptimal)
-            println(resolutionMethod[methodId], " time: ", round(resolutionTime, digits=2), "s")
         end
     end
 end
+
+
+# """
+# function solveDataSet()
+#     dataFolder = "../data/"
+#     resFolder = "../res/"
+
+#     resolutionMethod = ["cplex"]  # Assuming only CPLEX is used for now
+#     resolutionFolder = resFolder .* resolutionMethod
+#     println(resolutionFolder)
+#     # Create each result folder if it does not exist
+#     for folder in resolutionFolder
+#         if !isdir(folder)
+#             mkdir(folder)
+#         end
+#     end
+
+#     global isOptimal = false
+#     global solveTime = -1
+
+#     # For each instance (for each file in folder dataFolder which ends by ".txt")
+#     counter = 0
+#     for file in filter(x -> occursin(".txt", x), readdir(dataFolder))
+#         println("-- Resolution of ", file)
+#         t = readInputFile(dataFolder * file)
+#         counter += 1
+#         if counter > 10
+#             break
+#         end
+    
+        
+#         for methodId in 1:size(resolutionMethod, 1)
+
+#             outputFile = resolutionFolder[methodId] * "/" * file
+#             println("outputfile outputFile")
+            
+#             if !isfile(outputFile)
+#                 fout = open(outputFile, "w")  
+#                 resolutionTime = -1
+#                 isOptimal = false
+                
+#                 if resolutionMethod[methodId] == "cplex"
+#                     # Solve the instance with CPLEX
+#                     isOptimal, solution, resolutionTime = cplexSolve(t)
+#                 else
+#                     startingTime = time()
+#                     while !isOptimal && resolutionTime < 100
+#                         isOptimal, resolutionTime = heuristicSolve()
+#                         resolutionTime = time() - startingTime
+#                     end
+                    
+#                     if isOptimal
+#                         println(fout, "Heuristic solution found.")
+#                     else
+#                         println(fout, "No solution found.")
+#                     end
+#                 end
+
+#                 if isOptimal
+#                     writeSolution(fout, solution, resolutionTime, isOptimal)
+#                 else 
+#                     println(fout, "No solution found.")
+#                 end
+#                 close(fout)
+#             end
+#         end
+            
+#         # include(outputFile)
+#         # println(resolutionMethod[methodId], " optimal: ", isOptimal)
+#         # println(resolutionMethod[methodId], " time: ", round(resolutionTime, digits=2), "s")
+        
+#     end
+# end
+# """

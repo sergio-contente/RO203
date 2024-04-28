@@ -470,30 +470,26 @@ function resultsArray(outputFile::String)
  & \multicolumn{2}{c|}{\textbf{cplex}}\\
 \textbf{Instance} & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline""")
 
-    # Process each instance
-    subfolders = readdir(resultFolder)
-    for subfolder in subfolders
+    # Processando cada arquivo de instância
+    for subfolder in readdir(resultFolder)
         path = joinpath(resultFolder, subfolder)
         if isdir(path)
             for instanceFile in readdir(path)
                 if occursin(".txt", instanceFile)
                     filePath = joinpath(path, instanceFile)
                     solveTime, isOptimal, _ = readResultFile(filePath)
-                    if !isnothing(solveTime) && !isnothing(isOptimal)
-                        optimalSymbol = isOptimal ? "\$\\times\$" : ""
+                    if !isnothing(solveTime)
+                        optimalSymbol = isOptimal ? "\$\\times\$" : " "
                         println(fout, replace(instanceFile, "_" => "\\_"), " & ", solveTime, " & ", optimalSymbol, " \\\\")
                     end
-                    
                 end
             end
         end
     end
 
-    # Close the table and document
     println(fout, "\\hline")
     println(fout, "\\end{tabular}")
     println(fout, "\\end{center}")
     println(fout, "\\end{document}")
-
     close(fout)
 end
