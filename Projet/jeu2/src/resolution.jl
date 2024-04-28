@@ -123,11 +123,11 @@ function cplexSolve(t::Matrix{Int64})
                             println("An optimal solution has been found after modification.")
                             isOptimal = true
                             resolutionTime = solve_time(m)
-                            return (new_solution, isOptimal, resolutionTime)
+                            return (new_solution, resolutionTime, isOptimal)
                         else
                             println("A feasible but not optimal solution was found after modification.")
                             resolutionTime = solve_time(m)
-                            return (new_solution, false, resolutionTime)
+                            return (new_solution, resolutionTime, false)
                         end
                     else
                         println("Modified solution at cell ($i, $j) still not connected.")
@@ -137,7 +137,7 @@ function cplexSolve(t::Matrix{Int64})
         end
 
         println("No valid connected and optimal solution found after modifications.")
-        return (nothing, false, 0)
+        return (nothing, 0, false)
     else
         println("Initial solution is connected and optimal.")
         resolutionTime = solve_time(m)
