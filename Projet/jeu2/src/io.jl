@@ -440,130 +440,60 @@ Prerequisites:
 - Each text file contains a variable "solveTime" and a variable "isOptimal"
 """
 function resultsArray(outputFile::String)
+    resultFolder = "../res/"  # Adjust this path if necessary
     
-    resultFolder = "../res/"
-    dataFolder = "../data/"
-    
-    # Maximal number of files in a subfolder
-    maxSize = 0
-
-    # Number of subfolders
-    subfolderCount = 0
-
-    # Open the latex output file
+    # Open the LaTeX output file
     fout = open(outputFile, "w")
 
-    # Print the latex file output
+    # Write the header of the LaTeX document
     println(fout, raw"""\documentclass{article}
-
 \usepackage[french]{babel}
-\usepackage [utf8] {inputenc} % utf-8 / latin1 
+\usepackage[utf8]{inputenc}
 \usepackage{multicol}
-
 \setlength{\hoffset}{-18pt}
-\setlength{\oddsidemargin}{0pt} % Marge gauche sur pages impaires
-\setlength{\evensidemargin}{9pt} % Marge gauche sur pages paires
-\setlength{\marginparwidth}{54pt} % Largeur de note dans la marge
-\setlength{\textwidth}{481pt} % Largeur de la zone de texte (17cm)
-\setlength{\voffset}{-18pt} % Bon pour DOS
-\setlength{\marginparsep}{7pt} % Séparation de la marge
-\setlength{\topmargin}{0pt} % Pas de marge en haut
-\setlength{\headheight}{13pt} % Haut de page
-\setlength{\headsep}{10pt} % Entre le haut de page et le texte
-\setlength{\footskip}{27pt} % Bas de page + séparation
-\setlength{\textheight}{668pt} % Hauteur de la zone de texte (25cm)
-
-\begin{document}""")
-
-    header = raw"""
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{9pt}
+\setlength{\marginparwidth}{54pt}
+\setlength{\textwidth}{481pt}
+\setlength{\voffset}{-18pt}
+\setlength{\marginparsep}{7pt}
+\setlength{\topmargin}{0pt}
+\setlength{\headheight}{13pt}
+\setlength{\headsep}{10pt}
+\setlength{\footskip}{27pt}
+\setlength{\textheight}{668pt}
+\begin{document}
 \begin{center}
-\renewcommand{\arraystretch}{1.4} 
- \begin{tabular}{l"""
-
-    # Name of the subfolder of the result folder (i.e, the resolution methods used)
-    folderName = Array{String, 1}()
-
-    # List of all the instances solved by at least one resolution method
-    solvedInstances = Array{String, 1}()
-
-    # For each file in the result folder
-    for file in readdir(resultFolder)
-
-        path = resultFolder * file
-        
-        # If it is a subfolder
-        if isdir(path)
-
-            # Add its name to the folder list
-            folderName = vcat(folderName, file)
-             
-            subfolderCount += 1
-            folderSize = size(readdir(path), 1)
-
-            # Add all its files in the solvedInstances array
-            for file2 in filter(x->occursin(".txt", x), readdir(path))
-                solvedInstances = vcat(solvedInstances, file2)
-            end 
-
-            if maxSize < folderSize
-                maxSize = folderSize
-            end
-        end
-    end
-
-    # Only keep one string for each instance solved
-    unique(solvedInstances)
-
-    # For each resolution method, add two columns in the array
-    for folder in folderName
-        header *= "rr"
-    end
-
-    header *= "}\n\t\\hline\n"
-
-    # Create the header line which contains the methods name
-    for folder in folderName
-        header *= " & \\multicolumn{2}{c}{\\textbf{" * folder * "}}"
-    end
-
-    header *= "\\\\\n\\textbf{Instance} "
-
-    # Create the second header line with the content of the result columns
-    for folder in folderName
-        header *= " & \\textbf{Temps (s)} & \\textbf{Optimal ?} "
-    end
-
-    header *= "\\\\\\hline\n"
-
-    footer = raw"""\hline\end{tabular}
-\end{center}
-
-"""
-    println(fout, header)
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|l|rr|}
+\hline
+ & \multicolumn{2}{c|}{\textbf{cplex}}\\
+\textbf{Instance} & \textbf{Temps (s)} & \textbf{Optimal ?} \\\hline""")
 
     # Process each instance
-    maxInstancePerPage = 30
-    id = 1
-    for solvedInstance in readdir(resultFolder)
-        if isfile(joinpath(resultFolder, solvedInstance))
-            if rem(id, maxInstancePerPage) == 0
-                println(fout, "\\end{tabular}\n\\newpage\n\\begin{tabular}{l}")
+    subfolders = readdir(resultFolder)
+    for subfolder in subfolders
+        path = joinpath(resultFolder, subfolder)
+        if isdir(path)
+            for instanceFile in readdir(path)
+                if occursin(".txt", instanceFile)
+                    filePath = joinpath(path, instanceFile)
+                    solveTime, isOptimal, _ = readResultFile(filePath)
+                    if !isnothing(solveTime) && !isnothing(isOptimal)
+                        optimalSymbol = isOptimal ? "\$\\times\$" : ""
+                        println(fout, replace(instanceFile, "_" => "\\_"), " & ", solveTime, " & ", optimalSymbol, " \\\\")
+                    end
+                    
+                end
             end
-            file_path = joinpath(resultFolder, solvedInstance)
-            solveTime, isOptimal, _ = readResultFile(file_path)
-            println(fout, replace(solvedInstance, "_" => "\\_"), " & ", round(solveTime, digits=2), " & ")
-            if isOptimal
-                println(fout, "\$\\times\$")
-            else
-                println(fout, " - ")
-            end
-            println(fout, "\\\\")
-            id += 1
         end
     end
 
     # Close the table and document
-    println(fout, "\\end{tabular}\n\\end{center}")
+    println(fout, "\\hline")
+    println(fout, "\\end{tabular}")
+    println(fout, "\\end{center}")
     println(fout, "\\end{document}")
+
     close(fout)
-end 
+end

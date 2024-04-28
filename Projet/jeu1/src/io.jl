@@ -246,6 +246,7 @@ function performanceDiagram(outputFile::String)
 
                 fileCount += 1
                 include(path * "/" * resultFile)
+                solveTime, isOptimal = readResultFile(path)
 
                 if isOptimal
                     results[folderCount, fileCount] = solveTime
