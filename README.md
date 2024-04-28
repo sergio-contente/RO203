@@ -1,6 +1,8 @@
 # RO203
 This repository contains all the code used for the Project of the RO203 course (Game Theory and Graphs) at ENSTA Paris 
 
+## Jeux choisis: Flips (1) et Singles (2)
+
 Pour utiliser ce programme, se placer dans le répertoire ./src
 
 Les utilisations possibles sont les suivantes :
