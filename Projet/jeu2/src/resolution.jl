@@ -152,30 +152,135 @@ function heuristicSolve(t::Matrix{Int64})
     solution = copy(t)
     times_total = Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}}()
     isSingle = false
+    saved_state = nothing
+    count = 0
 
     while !isSingle
-        all_single = true
-        line_groups = Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int}}}()
-        column_groups = Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int}}}()
-
+        # Count how many times a value apears in a line or column
         for i in 1:n
             for j in 1:n
+                if solution[i,j] == -1
+                    continue
+                end
+                line_times, column_times = 0, 0
                 line_times, column_times = count_times(solution, (i, j))
                 times_total[(i, j)] = (line_times, column_times, solution[i,j])
-                if line_times > 0 || column_times > 0
-                    all_single = false
-                end
-
+                value = solution[i,j]
             end
         end
-        isSingle = all_single
+        (best_coordinate, second_best_coordinate, tie) = compareValues(times_total)
+        print(best_coordinate)
+        print(times_total[best_coordinate])
+        println(solution)
+        if tie == true
+            println("TIE É TRUE")
+            saved_state = copy(solution)  # Salvar estado do jogo apenas quando há empate
+            
+            if tryMarking(solution, best_coordinate)  # Tentar marcar a melhor coordenada
+            else tryMarking(solution, second_best_coordinate)  # Tentar marcar a segunda melhor coordenada
+            end
+
+            if !heuristicCheckConnectivity(solution)
+                println("GRAFO N CONECTADO")
+                solution = saved_state  # Voltar ao estado salvo se não estiver conectado
+                tryMarking!(solution, second_best_coordinate)  # Tentar com a segunda melhor coordenada
+            end
+        else
+            println("TIE É FALSE")
+            tryMarking(solution, best_coordinate)
+            if !heuristicCheckConnectivity(solution)
+                println("No solution find")
+                return 
+            end
+            println("tryMarking(solution, $best_coordinate) $(tryMarking(solution, best_coordinate))")
+        end
+        updateTimesTotal(solution, times_total)
+        isSingle = checkSingularity(solution, times_total)
     end
+    println("JOGO FINAL: ")
+    println(solution)
 end
+
+function tryMarking(solution, coord)
+    if canBeBlack(solution, coord)
+        (i,j) = coord
+        solution[i,j] = -1  # Marcar preto
+        return true
+    end
+    return false
+end
+
+function heuristicCheckConnectivity(solution::Matrix)
+    n = size(solution, 1)
+    mapped_solution = copy(solution)
+    for i in 1:n
+        for j in 1:n
+            if solution[i,j] != -1
+                mapped_solution[i,j] = 0
+            else
+                mapped_solution[i,j] = 1
+            end
+        end   
+    end
+    return check_connectivity(mapped_solution, n)
+end
+
+
+"""
+Compares how many times each value appears in its row and column and returns the coordinates of the most frequent one,
+ second one and if it is a tie 
+"""
+function compareValues(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}})
+    max_freq = -1
+    second_max_freq = -1
+    max_value = -1
+    second_max_value = -1
+    best_coordinate = (-1, -1)
+    second_best_coordinate = (-1, -1)
+    tie = false
+    for (coord, (line_times, column_times, value)) in times_total
+        if value == -1
+            continue
+        end
+        total_freq = line_times + column_times
+        if total_freq >= max_freq
+            second_max_freq = max_freq
+            second_best_coordinate = best_coordinate
+            second_max_value = max_value
+            max_freq = total_freq
+            best_coordinate = coord
+        end
+    end
+    println("MAX FREQ: $max_freq\n SECOND MAX FREQ: $second_max_freq")
+    if max_freq == second_max_freq &&  max_value == second_max_value && max_freq > 0
+        tie = true
+        print("SECOND BEST SOLUTION: $second_best_coordinate")
+        println("No unique best coordinate found")
+        return best_coordinate, second_best_coordinate, tie
+    end
+    return best_coordinate, second_best_coordinate, tie
+end
+
+
+function checkSingularity(solution::Matrix{Int64}, times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}})
+    all_single = true
+    for (key, (line_times, column_times, value)) in times_total
+        if line_times > 0 || column_times > 0
+            all_single = false
+            break  # If one non-single found, no need to check further
+        end
+    end
+    return all_single
+end
+
 
 function verifyBlack(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
-    return 
+    return solution[coordinate] == -1 # Black: -1
 end
 
+"""
+How many times the value of the current number appears in its column and line
+"""
 function count_times(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
     n = size(solution, 1)
     (line, column) = coordinate
@@ -185,21 +290,52 @@ function count_times(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
     target = solution[line, column]
 
     for j in 1:n
-        if solution[line, j] == target && j != column
+        if solution[line, j] == target && j != column && solution[line, column] != -1
             line_times += 1
         end
     end
 
     for i in 1:n
-        if solution[i, column] == target && i != line
+        if solution[i, column] == target && i != line && solution[line, column] != -1
             column_times += 1
         end
+        
     end
-
     return line_times, column_times
 end
 
+"""
+Can the current cell be black (black adjacent constraint)? 
+"""
+function canBeBlack(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
+    (line, column) = coordinate
+    n = size(solution, 1)
+    if line > 1 && solution[line-1, column] == -1
+        println("casa de cima preta")
+        return false
+    end
+    if line < n && solution[line+1, column] == -1
+        println("casa de baixo preta")
+        return false
+    end
+    if column > 1 && solution[line, column-1] == -1
+        println("casa da esquerda preta")
+        return false
+    end
+    if column < n && solution[line, column+1] == -1
+        println("casa da direita preta")
+        return false
+    end
+    return true
+end
 
+function updateTimesTotal(solution::Matrix{Int64}, times_total::Dict)
+    for key in keys(times_total)
+        (i,j) = key
+        line_times, column_times = count_times(solution, key)
+        times_total[key] = (line_times, column_times, solution[i,j])
+    end
+end
 
 """
 Solve all the instances contained in "../data" through CPLEX and heuristics
