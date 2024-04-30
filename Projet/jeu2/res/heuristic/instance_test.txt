@@ -1,1 +1,8 @@
-No valid solution found.
+Solution: 
+2,-1,5,-1,1
+1,5,3,2,4
+5,-1,1,-1,2
+3,2,4,1,-1
+-1,1,-1,5,3
+solveTime = 0.0820000171661377
+isOptimal = false

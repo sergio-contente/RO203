@@ -1,5 +1,6 @@
 # This file contains methods to solve an instance (heuristically or with CPLEX)
 using CPLEX
+using DataStructures
 
 include("generation.jl")
 include("heuristic.jl")
@@ -157,6 +158,7 @@ function heuristicSolve(t::Matrix{Int64})
     n = size(t, 1)
     solution = copy(t)
     times_total = Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}}()
+    freq_dict = Dict{Tuple{Int64, Int64}, Int64}()
     isSingle = false
     saved_state = nothing
     count = 0
@@ -174,50 +176,71 @@ function heuristicSolve(t::Matrix{Int64})
                 value = solution[i,j]
             end
         end
-        (best_coordinate, second_best_coordinate, tie) = compareValues(times_total)
-        print(best_coordinate)
-        print(times_total[best_coordinate])
+        #(best_coordinate, second_best_coordinate, tie) = compareValues(times_total)
+        freq_dict = computeFrequency(times_total)
+        foundMark = false
         println(solution)
-        if tie == true
-            println("TIE É TRUE")
-            saved_state = copy(solution)  # Salvar estado do jogo apenas quando há empate
-            
-            if tryMarking(solution, best_coordinate)
-                println("marcando com a best coord")  # Tentar marcar a melhor coordenada
-            else tryMarking(solution, second_best_coordinate)
-                println("marcando com a second best coord")  # Tentar marcar a segunda melhor coordenada
+        for (coord, freq) in freq_dict
+            if canBeBlack(solution, coord)
+                (line, column) = coord
+                past_value = solution[line, column]
+                Mark(solution, coord)
+                if !heuristicCheckConnectivity(solution)
+                    println("Solution not connected, checking others")
+                    Unmark(solution, coord, past_value)
+                else
+                    println("Marked and connected")
+                    foundMark = true
+                    break
+                end
             end
-
-            if !heuristicCheckConnectivity(solution)
-                println("GRAFO N CONECTADO")
-                solution = saved_state  # Voltar ao estado salvo se não estiver conectado
-                tryMarking(solution, second_best_coordinate)  # Tentar com a segunda melhor coordenada
-            end
-        else
-            println("TIE É FALSE")
-            tryMarking(solution, best_coordinate)
-            if !heuristicCheckConnectivity(solution)
-                println("No solution find")
-                return 
-            end
-            println("tryMarking(solution, $best_coordinate) $(tryMarking(solution, best_coordinate))")
         end
-        updateTimesTotal(solution, times_total)
-        isSingle = checkSingularity(solution, times_total)
+        if !foundMark
+            println("No solution found")
+            return nothing
+        else
+            updateTimesTotal(solution, times_total)
+            isSingle = checkSingularity(solution, times_total)
+        end
+        #     println("TIE É TRUE")
+        #     saved_state = copy(solution)  # Salvar estado do jogo apenas quando há empate
+            
+        #     if tryMarking(solution, best_coordinate)
+        #         println("marcando com a best coord")  # Tentar marcar a melhor coordenada
+        #     else tryMarking(solution, second_best_coordinate)
+        #         println("marcando com a second best coord")  # Tentar marcar a segunda melhor coordenada
+        #     end
+
+        #     if !heuristicCheckConnectivity(solution)
+        #         println("GRAFO N CONECTADO")
+        #         solution = saved_state  # Voltar ao estado salvo se não estiver conectado
+        #         tryMarking(solution, second_best_coordinate)  # Tentar com a segunda melhor coordenada
+        #     end
+        # else
+        #     println("TIE É FALSE")
+        #     tryMarking(solution, best_coordinate)
+        #     if !heuristicCheckConnectivity(solution)
+        #         println("No solution find")
+        #         return 
+        #     end
+        #     println("tryMarking(solution, $best_coordinate) $(tryMarking(solution, best_coordinate))")
+        # end
     end
     println("JOGO FINAL: ")
     println(solution)
     return solution
 end
 
-function tryMarking(solution, coord)
-    if canBeBlack(solution, coord)
-        (i,j) = coord
-        solution[i,j] = -1  # Marcar preto
-        return true
-    end
-    println("n consegui marcar :(")
-    return false
+function Mark(solution, coord)
+    (i,j) = coord
+    solution[i,j] = -1  # Marcar preto
+    return true
+end
+
+function Unmark(solution, coord, past_value)
+    (i,j) = coord
+    solution[i,j] = past_value  # Marcar branco
+    return true
 end
 
 function heuristicCheckConnectivity(solution::Matrix)
@@ -254,14 +277,16 @@ function compareValues(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64
         end
         total_freq = line_times + column_times
         if total_freq >= max_freq
-            second_max_freq = max_freq
-            second_best_coordinate = best_coordinate
-            second_max_value = max_value
+            if best_coordinate != second_best_coordinate
+                second_max_freq = max_freq
+                second_best_coordinate = best_coordinate
+                second_max_value = max_value
+            end
             max_freq = total_freq
             best_coordinate = coord
         end
     end
-    println("MAX FREQ: $max_freq\n SECOND MAX FREQ: $second_max_freq")
+    println("MAX FREQ: $max_freq\nSECOND MAX FREQ: $second_max_freq")
     if max_freq == second_max_freq &&  max_value == second_max_value && max_freq > 0
         tie = true
         print("SECOND BEST SOLUTION: $second_best_coordinate")
@@ -269,6 +294,59 @@ function compareValues(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64
         return best_coordinate, second_best_coordinate, tie
     end
     return best_coordinate, second_best_coordinate, tie
+end
+
+
+function computeFrequency(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}})
+    # Initialize the frequency dictionary
+    freqDict = Dict{Tuple{Int64, Int64}, Int64}()
+
+    for (coord, (line_times, column_times, value)) in times_total
+        if value == -1
+            continue
+        end
+        total_freq = line_times + column_times
+        (i,j) = coord
+        freqDict[i,j] = total_freq
+    end
+
+    # println(freqDict)
+
+    # Sort the dictionary by values in descending order
+    # sorted_dict = sort(collect(freqDict), lt=compare_values_desc)
+
+    # # Convert the sorted array of key-value pairs back to a dictionary
+    # sorted_freqDict = Dict(sorted_dict)
+    sorted_freqDict = sortDictionaryDescending(freqDict)
+    return sorted_freqDict
+end
+
+using DataStructures
+
+function sortDictionaryDescending(dict::Dict{Tuple{Int, Int}, Int})
+    # Convert the dictionary to an array of key-value pairs
+    pair_list = collect(dict)
+    
+    # Sort the array of pairs based on values in descending order
+    sorted_pairs = sort(pair_list, by = x -> x[2], rev = true)
+    
+    # Convert the sorted array back to an ordered dictionary
+    sorted_dict = OrderedDict(sorted_pairs)
+
+    println(sorted_dict)
+    return sorted_dict
+end
+
+
+
+function compare_values_desc(kv1, kv2)
+    if kv1[2] > kv2[2]
+        return true
+    elseif kv1[2] < kv2[2]
+        return false
+    else
+        return kv1[1] < kv2[1]  # Add secondary comparison by key
+    end
 end
 
 
@@ -340,6 +418,7 @@ function canBeBlack(solution::Matrix{Int64}, coordinate::Tuple{Int64, Int64})
 end
 
 function updateTimesTotal(solution::Matrix{Int64}, times_total::Dict)
+    println("atualizando valores")
     for key in keys(times_total)
         (i,j) = key
         line_times, column_times = count_times(solution, key)
@@ -395,7 +474,7 @@ function solveDataSet()
                         solution, resolutionTime, isOptimal = cplexSolve(t)
                     elseif method == "heuristic"
                         time_start = time()
-                        solution = heuristicSolve2(t)
+                        solution = heuristicSolve(t)
                         resolutionTime = time() - time_start
                     end
 
