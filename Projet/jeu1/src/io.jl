@@ -159,22 +159,6 @@ Arguments
 - fout: the output stream (usually an output file)
 - x: 2-dimensional variables array such that x[i, j, k] = 1 if cell is white or 0 otherwise
 """
-# function writeSolution(fout::IOStream, x::Array{VariableRef})
-
-#     # Convert the solution from x[i, j] variables into t[i, j] variables
-#     n = size(x, 1)
-#     t = Matrix{Int64}(undef, n, n)
-    
-#     for l in 1:n
-#         for c in 1:n
-#             t[l, c] = x[l, c]
-#         end 
-#     end
-
-#     # Write the solution
-#     writeSolution(fout, t)
-
-# end
 
 function readResultFile(filePath::String)
     data = open(filePath) do file

@@ -202,44 +202,22 @@ function heuristicSolve(t::Matrix{Int64})
             updateTimesTotal(solution, times_total)
             isSingle = checkSingularity(solution, times_total)
         end
-        #     println("TIE É TRUE")
-        #     saved_state = copy(solution)  # Salvar estado do jogo apenas quando há empate
-            
-        #     if tryMarking(solution, best_coordinate)
-        #         println("marcando com a best coord")  # Tentar marcar a melhor coordenada
-        #     else tryMarking(solution, second_best_coordinate)
-        #         println("marcando com a second best coord")  # Tentar marcar a segunda melhor coordenada
-        #     end
-
-        #     if !heuristicCheckConnectivity(solution)
-        #         println("GRAFO N CONECTADO")
-        #         solution = saved_state  # Voltar ao estado salvo se não estiver conectado
-        #         tryMarking(solution, second_best_coordinate)  # Tentar com a segunda melhor coordenada
-        #     end
-        # else
-        #     println("TIE É FALSE")
-        #     tryMarking(solution, best_coordinate)
-        #     if !heuristicCheckConnectivity(solution)
-        #         println("No solution find")
-        #         return 
-        #     end
-        #     println("tryMarking(solution, $best_coordinate) $(tryMarking(solution, best_coordinate))")
-        # end
     end
     println("JOGO FINAL: ")
     println(solution)
+    solution = float(solution)
     return solution
 end
 
 function Mark(solution, coord)
     (i,j) = coord
-    solution[i,j] = -1  # Marcar preto
+    solution[i,j] = -1  # Mark in black
     return true
 end
 
 function Unmark(solution, coord, past_value)
     (i,j) = coord
-    solution[i,j] = past_value  # Marcar branco
+    solution[i,j] = past_value  # Mark in white
     return true
 end
 
@@ -310,13 +288,6 @@ function computeFrequency(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, In
         freqDict[i,j] = total_freq
     end
 
-    # println(freqDict)
-
-    # Sort the dictionary by values in descending order
-    # sorted_dict = sort(collect(freqDict), lt=compare_values_desc)
-
-    # # Convert the sorted array of key-value pairs back to a dictionary
-    # sorted_freqDict = Dict(sorted_dict)
     sorted_freqDict = sortDictionaryDescending(freqDict)
     return sorted_freqDict
 end
