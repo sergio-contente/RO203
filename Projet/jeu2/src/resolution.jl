@@ -3,7 +3,6 @@ using CPLEX
 using DataStructures
 
 include("generation.jl")
-include("heuristic.jl")
 
 TOL = 0.00001
 
@@ -408,6 +407,7 @@ function solveDataSet()
                     elseif method == "heuristic"
                         time_start = time()
                         solution = heuristicSolve(t)
+                        isOptimal = true
                         resolutionTime = time() - time_start
                     end
 
