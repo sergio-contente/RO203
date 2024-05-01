@@ -237,44 +237,6 @@ function heuristicCheckConnectivity(solution::Matrix)
 end
 
 
-"""
-Compares how many times each value appears in its row and column and returns the coordinates of the most frequent one,
- second one and if it is a tie 
-"""
-function compareValues(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}})
-    max_freq = -1
-    second_max_freq = -1
-    max_value = -1
-    second_max_value = -1
-    best_coordinate = (-1, -1)
-    second_best_coordinate = (-1, -1)
-    tie = false
-    for (coord, (line_times, column_times, value)) in times_total
-        if value == -1
-            continue
-        end
-        total_freq = line_times + column_times
-        if total_freq >= max_freq
-            if best_coordinate != second_best_coordinate
-                second_max_freq = max_freq
-                second_best_coordinate = best_coordinate
-                second_max_value = max_value
-            end
-            max_freq = total_freq
-            best_coordinate = coord
-        end
-    end
-    println("MAX FREQ: $max_freq\nSECOND MAX FREQ: $second_max_freq")
-    if max_freq == second_max_freq &&  max_value == second_max_value && max_freq > 0
-        tie = true
-        print("SECOND BEST SOLUTION: $second_best_coordinate")
-        println("No unique best coordinate found")
-        return best_coordinate, second_best_coordinate, tie
-    end
-    return best_coordinate, second_best_coordinate, tie
-end
-
-
 function computeFrequency(times_total::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64, Int64}})
     # Initialize the frequency dictionary
     freqDict = Dict{Tuple{Int64, Int64}, Int64}()
