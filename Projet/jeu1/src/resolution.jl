@@ -15,7 +15,7 @@ function cplexSolve(t::Matrix{Int64})
 
     @variable(m, flips[1:n, 1:n], Bin)
     @variable(m, choice[i=1:n, j=1:n, k=1:3], Bin)  # Binary variables for choosing flips
-    @variable(m, local_flips[1:n, 1:n], Int)
+    @variable(m, z[1:n, 1:n], Int)
 
     for i in 1:n
         for j in 1:n
@@ -33,9 +33,10 @@ function cplexSolve(t::Matrix{Int64})
                 local_flips += flips[i, j+1]
             end
 
+            @constraint(m, z[i, j] == local_flips)
             if t[i, j] == 0
                 # Choices for odd numbers of flips: 1, 3, 5
-                @constraint(m, local_flips == 1*choice[i,j,1] + 3*choice[i,j,2] + 5*choice[i,j,3])
+                @constraint(m, z[i,j] == 1*choice[i,j,1] + 3*choice[i,j,2] + 5*choice[i,j,3])
                 @constraint(m, sum(choice[i,j,:]) == 1)  # Ensure exactly one choice is made
             else
                 # Choices for even numbers of flips: 0, 2, 4
@@ -132,7 +133,7 @@ function solveDataSet()
                     resolutionTime, isOptimal = 0.0, false
 
                     if method == "cplex"
-                         isOptimal, solution, resolutionTime = cplexSolve(t)
+                        isOptimal, solution, resolutionTime = cplexSolve(t)
                     elseif method == "heuristic"
                         time_start = time()
                         solution = heuristicSolve(t)
