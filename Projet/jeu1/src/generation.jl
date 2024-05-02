@@ -43,13 +43,13 @@ Remark: a grid is generated only if the corresponding output file does not alrea
 function generateDataSet()
 
     # for each grid size
-    for size in [4, 6, 8, 10]
+    for size in [4, 8, 16, 32, 64, 128, 256]
 
         # for each flips
-        for flips in [8, 12, 16, 20]
+        for flips in [4, 8, 16, 32, 64, 128, 256, 512]
             
             # generate 10 instance
-            for instance in 1:10
+            for instance in 1:5
 
                 # Generate the instance
                 fileName = "../data/instance_t$(size)_f$(flips)_i$(instance).txt"

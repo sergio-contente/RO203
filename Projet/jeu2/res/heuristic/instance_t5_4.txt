@@ -4,5 +4,5 @@ Solution:
 3.0,-1.0,5.0,1.0,4.0
 1.0,3.0,2.0,4.0,5.0
 4.0,5.0,-1.0,2.0,1.0
-solveTime = 0.021999835968017578
-isOptimal = false
+solveTime = 0.06500005722045898
+isOptimal = true
